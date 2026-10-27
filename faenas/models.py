@@ -95,5 +95,5 @@ class Captura(models.Model):
             )
         ]
 
-        def __str__(self):
-            return f"{self.especie}: {self.kilogramos} kg"
+    def __str__(self):
+        return f"{self.especie}: {self.kilogramos} kg"
