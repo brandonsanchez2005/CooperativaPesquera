@@ -85,45 +85,39 @@ def listar_recurso(
         datos = queryset if queryset is not None else modelo.objects.all()
         datos = aplicar_filtro_consulta(datos, rol, request.user, alcance)
 
-    # Los filtros enviados se combinan si aparecen juntos.
-    for parametro, campo in (filtros or {}).items():
-        valor = request.query_params.get(parametro)
+        for parametro, campo in (filtros or {}).items():
+            valor = request.query_params.get(parametro)
+            if valor:
+                datos = datos.filter(**{campo: valor})
 
-        if valor:
-            datos = datos.filter(**{campo: valor})
+        texto = request.query_params.get("search")
+        if texto and campos_busqueda:
+            condicion = Q()
+            for campo in campos_busqueda:
+                condicion |= Q(**{f"{campo}__icontains": texto})
+            datos = datos.filter(condicion)
 
-    texto = request.query_params.get("search")
-    if texto and campos_busqueda:
-        condicion = Q()
-
-        for campo in campos_busqueda:
-            condicion |= Q(**{f"{campo}__icontains": texto})
-        datos = datos.filter(condicion)
         orden = request.query_params.get("ordering")
-
         if orden and campos_ordenamiento:
             campo_solicitado = orden.lstrip("-")
-
             if campo_solicitado in campos_ordenamiento:
                 datos = datos.order_by(orden)
-
             elif ordenamiento_default:
                 datos = datos.order_by(ordenamiento_default)
-
         elif ordenamiento_default:
             datos = datos.order_by(ordenamiento_default)
 
         paginador = Paginator(datos, 5)
         pagina = paginador.get_page(request.query_params.get("page", 1))
 
-        return Response(
-            {
-                "pagina_actual": pagina.number,
-                "total_paginas": paginador.num_pages,
-                "total_registros": paginador.count,
-                "resultados": serializer_class(pagina.object_list, many=True).data,
-            }
-        )
+        return Response({
+            "pagina_actual": pagina.number,
+            "total_paginas": paginador.num_pages,
+            "total_registros": paginador.count,
+            "resultados": serializer_class(
+                pagina.object_list, many=True
+            ).data,
+        })
 
     if rol not in ["Administrador", "Operador"]:
         return Response(
@@ -136,6 +130,7 @@ def listar_recurso(
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -360,12 +355,14 @@ def resumen_capturas_api(request):
 
     if rol == "Consulta":
         datos = datos.filter(faena__pescador__usuario=request.user)
-        resumen = (
-            datos.values("especie__nombre")
-            .annotate(
-                kilogramos_totales=Sum("kilogramos"), cantidad_capturas=Count("id")
-            )
-            .order_by("-kilogramos_totales")
+
+    resumen = (
+        datos.values("especie__nombre")
+        .annotate(
+            kilogramos_totales=Sum("kilogramos"),
+            cantidad_capturas=Count("id"),
         )
+        .order_by("-kilogramos_totales")
+    )
 
     return Response(list(resumen))
