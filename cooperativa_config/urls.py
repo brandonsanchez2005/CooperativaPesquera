@@ -24,5 +24,7 @@ urlpatterns = [
     path('api/', include('faenas.urls')),
     path("api/inventario/", include("inventario.urls")),
     path("api/procesamiento/", include("procesamiento.urls")),
+    path("api/pedidos/", include("pedidos.urls")),
+    path("api/liquidaciones/", include("liquidaciones.urls")),
 ]
 

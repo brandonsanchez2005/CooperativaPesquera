@@ -21,11 +21,9 @@ class CamaraFriaSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
     def validate_capacidad_kg(self, value):
-    if value <= Decimal("0"):
-        raise serializers.ValidationError(
-            "La capacidad debe ser mayor que cero."
-        )
-    return value
+        if value <= Decimal("0"):
+            raise serializers.ValidationError("La capacidad debe ser mayor que cero.")
+        return value
 
     def validate(self, data):
         temperatura = data.get(
