@@ -11,8 +11,12 @@ from faenas.views import (
     obtener_rol,
 )
 from .models import CamaraFria, LoteInventario
-from .serializers import CamaraFriaSerializer, LoteInventarioSerializer
 
+from .serializers import (
+    CamaraFriaSerializer,
+    LoteInventarioSerializer,
+    obtener_kilogramos_disponibles,
+)
 
 def lotes_visibles(request):
     datos = LoteInventario.objects.select_related(
@@ -101,7 +105,7 @@ def alertas_api(request):
     )
 
     lotes_con_existencia = [
-        lote for lote in lotes if lote.kilogramos_disponibles > 0
+    lote for lote in lotes if obtener_kilogramos_disponibles(lote) > 0
     ]
 
     return Response(LoteInventarioSerializer(lotes_con_existencia, many=True).data)
