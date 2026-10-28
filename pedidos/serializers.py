@@ -117,7 +117,7 @@ class PedidoSerializer(serializers.ModelSerializer):
                 })
 
         if estado == Pedido.Estado.ENTREGADO:
-            if self.instance and not self.instance.detalles.exists():
+            if not self.instance or not self.instance.detalles.exists():
                 raise serializers.ValidationError({
                     "estado": "No se puede entregar un pedido sin detalles."
                 })
