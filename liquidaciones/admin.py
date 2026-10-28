@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models import GastoFaena, Liquidacion
 
-# Register your models here.
+admin.site.register(GastoFaena)
+admin.site.register(Liquidacion)

@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models import CamaraFria, LoteInventario
 
-# Register your models here.
+admin.site.register(CamaraFria)
+admin.site.register(LoteInventario)
