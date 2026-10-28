@@ -1,0 +1,1246 @@
+{
+  "info": {
+    "_postman_id": "77041dc5-8409-4e90-9e1d-e5f7eaa9b722",
+    "name": "CooperativaPesquera API",
+    "description": "Colección de pruebas para la API de CooperativaPesquera. Importa y selecciona el environment CooperativaPesquera Local. Completa las credenciales localmente y ejecuta las solicitudes en orden; los scripts guardan los ids y tokens de las respuestas. Para las solicitudes de Consulta, crea primero en Django Admin un usuario y agrégalo al grupo Consulta. No exportes credenciales ni tokens.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Obtener token de Administrador",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/token/",
+        "description": "Esperado: 200 OK. Devuelve un token para las solicitudes protegidas. Completa username y password solo en tu environment local; no exportes esos valores.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) { pm.environment.set(\"token\", pm.response.json().token); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "02 - Obtener token de Consulta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/token/",
+        "description": "Esperado: 200 OK. Devuelve el token de un usuario del grupo Consulta. Créalo primero desde Django Admin y completa sus credenciales localmente.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username_consulta}}\",\n  \"password\": \"{{password_consulta}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) { pm.environment.set(\"token_consulta\", pm.response.json().token); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "03 - Crear pescador",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pescadores/",
+        "description": "Esperado: 201 Created. Crea un pescador y guarda automáticamente su id en pescador_id.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Pescador Postman {{$timestamp}}\",\n  \"identificacion\": \"PM-P-{{$timestamp}}\",\n  \"telefono\": \"8888-1111\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"pescador_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "04 - Listar pescadores",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pescadores/",
+        "description": "Esperado: 200 OK. Devuelve la lista paginada de pescadores."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "05 - Consultar pescador",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pescadores/{{pescador_id}}/",
+        "description": "Esperado: 200 OK. Devuelve el pescador creado en esta colección."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "06 - Actualizar teléfono del pescador (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pescadores/{{pescador_id}}/",
+        "description": "Esperado: 200 OK. Actualiza únicamente el teléfono y devuelve el pescador actualizado.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"telefono\": \"8888-2222\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "07 - Crear embarcación",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/embarcaciones/",
+        "description": "Esperado: 201 Created. Crea una embarcación con capacidad positiva y guarda su id en embarcacion_id.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Lancha Postman {{$timestamp}}\",\n  \"matricula\": \"PM-EMB-{{$timestamp}}\",\n  \"capacidad_kg\": \"100.00\",\n  \"activa\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"embarcacion_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "08 - Listar embarcaciones",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/embarcaciones/",
+        "description": "Esperado: 200 OK. Devuelve la lista paginada de embarcaciones."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "09 - Crear especie",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/especies/",
+        "description": "Esperado: 201 Created. Crea una especie activa y guarda su id en especie_id.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Corvina Postman {{$timestamp}}\",\n  \"temperatura_maxima\": \"4.00\",\n  \"activa\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"especie_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "10 - Crear faena",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/faenas/",
+        "description": "Esperado: 201 Created. Crea una faena con pescador y embarcación activos; guarda su id en faena_id.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pescador\": {{pescador_id}},\n  \"embarcacion\": {{embarcacion_id}},\n  \"fecha_salida\": \"2026-10-28T06:00:00-06:00\",\n  \"fecha_regreso\": \"2026-10-28T14:00:00-06:00\",\n  \"zona\": \"Puntarenas\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"faena_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "11 - Listar faenas filtradas",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/faenas/?pescador={{pescador_id}}&ordering=-fecha_salida&page=1",
+        "description": "Esperado: 200 OK. Filtra por pescador, ordena por fecha de salida y devuelve la página solicitada."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "12 - Actualizar faena (PUT)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/faenas/{{faena_id}}/",
+        "description": "Esperado: 200 OK. Actualiza la faena con PUT; se envían todos los campos obligatorios.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pescador\": {{pescador_id}},\n  \"embarcacion\": {{embarcacion_id}},\n  \"fecha_salida\": \"2026-10-28T06:00:00-06:00\",\n  \"fecha_regreso\": \"2026-10-28T14:00:00-06:00\",\n  \"zona\": \"Quepos\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "13 - Registrar captura",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/capturas/",
+        "description": "Esperado: 201 Created. Registra 20 kg sin superar la capacidad de la embarcación y guarda el id de la captura.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"faena\": {{faena_id}},\n  \"especie\": {{especie_id}},\n  \"kilogramos\": \"20.00\",\n  \"precio_kg\": \"2500.00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"captura_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "14 - Crear cámara fría",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/inventario/camaras/",
+        "description": "Esperado: 201 Created. Crea una cámara activa con temperatura adecuada y guarda su id.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"PMCAM{{$timestamp}}\",\n  \"nombre\": \"Cámara Postman {{$timestamp}}\",\n  \"temperatura_actual\": \"2.00\",\n  \"capacidad_kg\": \"100.00\",\n  \"activa\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"camara_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "15 - Crear lote de inventario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/inventario/lotes/",
+        "description": "Esperado: 201 Created. Crea un lote dentro de los límites de la captura y la cámara; guarda su id.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"PMLOT{{$timestamp}}\",\n  \"captura\": {{captura_id}},\n  \"camara\": {{camara_id}},\n  \"fecha_ingreso\": \"2026-10-28\",\n  \"fecha_vencimiento\": \"2030-12-31\",\n  \"kilogramos_iniciales\": \"20.00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"lote_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "16 - Listar lotes",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/inventario/lotes/?page=1",
+        "description": "Esperado: 200 OK. Devuelve lotes paginados con kilogramos disponibles y estado."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "17 - Consultar alertas de inventario",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/inventario/alertas/",
+        "description": "Esperado: 200 OK. Devuelve lotes con existencia vencidos o próximos a vencer; puede ser una lista vacía."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "18 - Registrar procesamiento",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/procesamiento/",
+        "description": "Esperado: 201 Created. Procesa 18 kg, obtiene 15 kg y calcula una merma de 3 kg.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"lote_inventario\": {{lote_id}},\n  \"producto\": \"FILETE\",\n  \"fecha_procesamiento\": \"2026-10-29\",\n  \"kilogramos_procesados\": \"18.00\",\n  \"kilogramos_obtenidos\": \"15.00\",\n  \"observaciones\": \"Prueba de colección Postman\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"procesamiento_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "19 - Listar procesamientos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/procesamiento/",
+        "description": "Esperado: 200 OK. Devuelve la lista paginada de procesamientos."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "20 - Crear cliente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pedidos/clientes/",
+        "description": "Esperado: 201 Created. Crea un cliente activo y guarda su id en cliente_id.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Restaurante Postman {{$timestamp}}\",\n  \"identificacion\": \"PMCLI{{$timestamp}}\",\n  \"tipo\": \"RESTAURANTE\",\n  \"correo\": \"restaurante@example.com\",\n  \"telefono\": \"8888-3333\",\n  \"activo\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"cliente_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "21 - Listar clientes",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pedidos/clientes/",
+        "description": "Esperado: 200 OK. Devuelve clientes paginados. Requiere rol Administrador u Operador."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "22 - Registrar precio vigente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pedidos/precios/",
+        "description": "Esperado: 201 Created. Registra un precio de FILETE para la especie durante el periodo indicado.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"especie\": {{especie_id}},\n  \"producto\": \"FILETE\",\n  \"precio_kg\": \"5500.00\",\n  \"vigente_desde\": \"2026-10-28\",\n  \"vigente_hasta\": \"2030-12-31\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "23 - Crear pedido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pedidos/ordenes/",
+        "description": "Esperado: 201 Created. Crea un pedido pendiente para el cliente activo.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cliente\": {{cliente_id}},\n  \"fecha_pedido\": \"2026-10-28\",\n  \"estado\": \"PENDIENTE\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"pedido_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "24 - Agregar detalle válido al pedido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pedidos/detalles/",
+        "description": "Esperado: 201 Created. Agrega 3 kg disponibles y devuelve el precio vigente y el total de línea.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pedido\": {{pedido_id}},\n  \"procesamiento\": {{procesamiento_id}},\n  \"kilogramos\": \"3.00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "25 - Rechazar detalle por exceso de producto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pedidos/detalles/",
+        "description": "Esperado: 400 Bad Request. Rechaza la cantidad porque supera el producto disponible para venta.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pedido\": {{pedido_id}},\n  \"procesamiento\": {{procesamiento_id}},\n  \"kilogramos\": \"16.00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 400\", function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "26 - Listar detalles de pedidos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pedidos/detalles/",
+        "description": "Esperado: 200 OK. Devuelve la lista paginada de detalles de pedidos."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "27 - Registrar gasto de faena",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/liquidaciones/gastos/",
+        "description": "Esperado: 201 Created. Registra un gasto positivo asociado a una faena con capturas.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"faena\": {{faena_id}},\n  \"tipo\": \"HIELO\",\n  \"descripcion\": \"Hielo para la faena de prueba\",\n  \"monto\": \"5000.00\",\n  \"fecha\": \"2026-10-28\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "28 - Crear liquidación",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/liquidaciones/",
+        "description": "Esperado: 201 Created. Calcula el monto bruto, los gastos y el monto neto de la faena.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"faena\": {{faena_id}},\n  \"fecha_liquidacion\": \"2026-10-28\",\n  \"estado\": \"PENDIENTE\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "29 - Listar liquidaciones",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/liquidaciones/",
+        "description": "Esperado: 200 OK. Devuelve liquidaciones paginadas y visibles para el usuario."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "30 - Sin token (401)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/pescadores/",
+        "description": "Esperado: 401 Unauthorized. Rechaza la solicitud porque no se envió token."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 401\", function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "31 - Consulta intenta crear faena (403)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token_consulta}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/faenas/",
+        "description": "Esperado: 403 Forbidden. El usuario Consulta está autenticado, pero no tiene permiso para crear faenas.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"pescador\": {{pescador_id}},\n  \"embarcacion\": {{embarcacion_id}},\n  \"fecha_salida\": \"2026-10-28T06:00:00-06:00\",\n  \"fecha_regreso\": \"2026-10-28T14:00:00-06:00\",\n  \"zona\": \"Prueba de permiso\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 403\", function () { pm.response.to.have.status(403); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "32 - ID inexistente (404)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/faenas/99999999/",
+        "description": "Esperado: 404 Not Found. El recurso con ese id no existe."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 404\", function () { pm.response.to.have.status(404); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "33 - No eliminar cliente relacionado (409)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pedidos/clientes/{{cliente_id}}/",
+        "description": "Esperado: 409 Conflict. No permite eliminar un cliente relacionado con un pedido."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 409\", function () { pm.response.to.have.status(409); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "34 - Crear pescador temporal para DELETE",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pescadores/",
+        "description": "Esperado: 201 Created. Crea un pescador temporal sin faenas relacionadas y guarda su id.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Pescador temporal {{$timestamp}}\",\n  \"identificacion\": \"PM-TMP-{{$timestamp}}\",\n  \"telefono\": \"8888-4444\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "if (pm.response.code === 201) { pm.environment.set(\"pescador_temporal_id\", pm.response.json().id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "35 - Eliminar pescador temporal (204)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Token {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{base_url}}/api/pescadores/{{pescador_temporal_id}}/",
+        "description": "Esperado: 204 No Content. Elimina el pescador temporal sin relaciones; no devuelve cuerpo."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Esperado: HTTP 204\", function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ]
+}
